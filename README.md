@@ -14,5 +14,7 @@ Example: `$ yarn compile input/quicksort.ts`
 ```bash
 $ yarn dict {input file path} {output file path}
 ```
-Example: `$ yarn dict input/quicksort.ts output/data.json`
+Example
+- `$ yarn dict input/quicksort.js output/data.json`
+- `$ yarn dict input/quicksort.ts output/data.json`
 

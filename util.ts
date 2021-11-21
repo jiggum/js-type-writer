@@ -1,12 +1,10 @@
 import * as ts from 'typescript'
 
-export const inCoverage = (node: ts.Node): undefined | [ts.TypeNode, ((to: ts.Node) => void)] => {
+export const inCoverage = (node: ts.Node): undefined | [string, ts.TypeNode | undefined, ((to: ts.Node) => void)] => {
   if (ts.isVariableDeclaration(node)) {
     if (ts.isIdentifier(node.name)) {
-      if (node.type?.kind && node.type.kind == ts.SyntaxKind.NumberKeyword) {
-        // @ts-ignore
-        return [node.type, (to) => node.type = to]
-      }
+      // @ts-ignore
+      return [node.name.escapedText, node.type, (to) => node.type = to]
     } else {
       throw Error(`Unhandled Node kind: ${node.kind}`)
     }
@@ -14,14 +12,14 @@ export const inCoverage = (node: ts.Node): undefined | [ts.TypeNode, ((to: ts.No
   return undefined
 }
 
-export const encodeType = (node: ts.TypeNode): string => {
-  if (node.kind === ts.SyntaxKind.NumberKeyword) {
+export const encodeType = (node?: ts.TypeNode): string => {
+  if (node?.kind === ts.SyntaxKind.NumberKeyword) {
     return 'number'
   }
-  if (node.kind === ts.SyntaxKind.StringKeyword) {
+  if (node?.kind === ts.SyntaxKind.StringKeyword) {
     return 'string'
   }
-  throw Error(`Unhandled TypeNode: ${node}`)
+  return 'any'
 }
 
 export const decodeType = (str: string): ts.TypeNode => {
@@ -30,6 +28,9 @@ export const decodeType = (str: string): ts.TypeNode => {
   }
   if (str === 'string') {
     return ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+  }
+  if (str === 'any') {
+    return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
   }
   throw Error(`Unhandled type string: ${str}`)
 }
