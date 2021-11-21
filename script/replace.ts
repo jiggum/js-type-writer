@@ -4,13 +4,13 @@ import { inCoverage, decodeType } from '../util'
 
 const DUMMY_FILE_PATH = '/tmp.ts'
 
-function visit(node: ts.Node, storage: [string, string][]) {
+function visit(node: ts.Node, reversedStorage: [string, string][]) {
   const result = inCoverage(node)
   if (result) {
     const [, , convert] = result
-    convert(decodeType(storage.shift()![1]))
+    convert(decodeType(reversedStorage.pop()![1]))
   }
-  ts.forEachChild(node, (e) => visit(e, storage))
+  ts.forEachChild(node, (e) => visit(e, reversedStorage))
 }
 
 function compile(
@@ -19,11 +19,11 @@ function compile(
   outputFileName: string,
   options: ts.CompilerOptions,
 ): void {
-  const dict = JSON.parse(fs.readFileSync(storageFileName, 'utf-8'))
+  const reversedStorage = JSON.parse(fs.readFileSync(storageFileName, 'utf-8')).reverse()
   let program = ts.createProgram([inputFileName], options)
   const sourceFile = program.getSourceFile(inputFileName)!
   const dummyFile = ts.createSourceFile(DUMMY_FILE_PATH, '', ts.ScriptTarget.Latest, false, ts.ScriptKind.TS)
-  visit(sourceFile, dict)
+  visit(sourceFile, reversedStorage)
   const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed})
   const text = printer.printNode(ts.EmitHint.Unspecified, sourceFile, dummyFile)
   fs.writeFileSync(outputFileName, text, 'utf8')

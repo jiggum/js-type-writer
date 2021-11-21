@@ -4,13 +4,13 @@ import { decodeType, inCoverage } from '../util'
 
 const DUMMY_FILE_PATH = '/tmp.ts'
 
-function visit(node: ts.Node, storage: [string, string][]) {
+function visit(node: ts.Node, reversedStorage: [string, string][]) {
   const result = inCoverage(node)
   if (result) {
     const [, , convert] = result
-    convert(decodeType(storage.shift()![1]))
+    convert(decodeType(reversedStorage.pop()![1]))
   }
-  ts.forEachChild(node, (e) => visit(e, storage))
+  ts.forEachChild(node, (e) => visit(e, reversedStorage))
 }
 
 function compile(
@@ -18,10 +18,10 @@ function compile(
   storageFileName: string,
   options: ts.CompilerOptions,
 ): void {
-  const dict = JSON.parse(fs.readFileSync(storageFileName, 'utf-8'))
+  const reversedStorage = JSON.parse(fs.readFileSync(storageFileName, 'utf-8')).reverse()
   const text = fs.readFileSync(fileName, 'utf-8')
   const ast = ts.createSourceFile(DUMMY_FILE_PATH, text, ts.ScriptTarget.Latest);
-  visit(ast, dict)
+  visit(ast, reversedStorage)
 
   const realHost = ts.createCompilerHost(options, true);
 
