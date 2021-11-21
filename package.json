@@ -1,6 +1,17 @@
 {
-  "name": "project",
+  "name": "js-type-writer",
   "version": "1.0.0",
+  "description": "Heuristic type inference for JS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiggum/js-type-writer"
+  },
+  "author": "jiggum <0s.dongmin@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jiggum/js-type-writer/issues"
+  },
+  "homepage": "https://github.com/jiggum/js-type-writer",
   "scripts": {
     "dict": "ts-node script/dict.ts",
     "compile": "ts-node script/compile.ts",
