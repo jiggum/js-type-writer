@@ -1,6 +1,9 @@
 {
   "name": "project",
   "version": "1.0.0",
+  "scripts": {
+    "genDict": "ts-node script/genDict.ts"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^16.11.9",
