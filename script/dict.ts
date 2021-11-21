@@ -1,18 +1,16 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import { TDictionary } from '../types'
+import { TDictionary } from '../type'
+import { inCoverage, encodeType } from '../util'
 
 function visit(node: ts.Node, dict: TDictionary) {
-  if (ts.isVariableDeclaration(node)) {
-    if (ts.isIdentifier(node.name)) {
-      if (node.type?.kind === ts.SyntaxKind.NumberKeyword) {
-        dict[node.type.pos] = node.type.kind
-      }
-    } else {
-      throw Error(`Unhandled Node kind: ${node.kind}`)
-    }
+  const result = inCoverage(node)
+  if (result) {
+    const [target] = result
+    dict[target.pos] = encodeType(target)
+  } else {
+    ts.forEachChild(node, (e) => visit(e, dict))
   }
-  ts.forEachChild(node, (e) => visit(e, dict))
 }
 
 function compile(fileName: string, options: ts.CompilerOptions): void {

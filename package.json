@@ -2,8 +2,9 @@
   "name": "project",
   "version": "1.0.0",
   "scripts": {
-    "dict": "ts-node script/genDict.ts",
-    "compile": "ts-node script/toJS.ts"
+    "dict": "ts-node script/dict.ts",
+    "compile": "ts-node script/compile.ts",
+    "replace": "ts-node script/replace.ts"
   },
   "dependencies": {},
   "devDependencies": {
