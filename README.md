@@ -7,29 +7,26 @@ $ yarn install
 ```
 
 ## Usage
-#### Compile TS file to JS
+### Compile TS file to JS
+`yarn compile {input .ts file path}`
 ```bash
-$ yarn compile {input .ts file path}
+$ yarn compile input/quicksort.ts
 ```
-Example: `$ yarn compile input/quicksort.ts`
 
-#### Generate type storage from JS/TS file
+### Generate type storage from JS/TS file
+`yarn dict {input .js/.ts file path} {output .json storage path}`
 ```bash
-$ yarn dict {input .js/.ts file path} {output .json storage path}
+$ yarn dict input/quicksort.js output/data.json
 ```
-Example
-- `$ yarn dict input/quicksort.js output/data.json`
 
-#### Replace types
+### Replace types
+`yarn replace {input .json storage path} {input .js/.ts file path} {output .ts file path}`
 ```bash
-$ yarn replace {input .json storage path} {input .js/.ts file path} {output .ts file path}
+$ yarn replace output/data.json input/quicksort.js output/quicksort.ts
 ```
-Example
-- `$ yarn replace output/data.json input/quicksort.js output/quicksort.ts`
 
-#### Check type
+### Check type
+`yarn diagnose {input .js/.ts file path} {input .json storage path}`
 ```bash
-$ yarn diagnose {input .js/.ts file path} {input .json storage path}
+$ yarn diagnose input/quicksort.js output/data.json
 ```
-Example
-- `$ yarn diagnose input/quicksort.js output/data.json`
