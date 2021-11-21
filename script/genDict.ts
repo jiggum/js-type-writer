@@ -1,7 +1,6 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-
-type TDictionary = { [pos: number]: ts.SyntaxKind }
+import { TDictionary } from '../types'
 
 function visit(node: ts.Node, dict: TDictionary) {
   if (ts.isVariableDeclaration(node)) {
