@@ -1,4 +1,7 @@
-## Installation
+# JS Type Writer
+Heuristic type inference for JS
+
+## Install
 ```bash
 $ yarn install
 ```
