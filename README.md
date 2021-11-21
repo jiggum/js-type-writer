@@ -24,3 +24,9 @@ $ yarn replace {input .json storage path} {input .js/.ts file path} {output .ts 
 Example
 - `$ yarn replace output/data.json input/quicksort.js output/quicksort.ts`
 
+#### Check type
+```bash
+$ yarn diagnose {input .js/.ts file path} {input .json storage path}
+```
+Example
+- `$ yarn diagnose input/quicksort.js output/data.json`

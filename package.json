@@ -5,7 +5,7 @@
     "dict": "ts-node script/dict.ts",
     "compile": "ts-node script/compile.ts",
     "replace": "ts-node script/replace.ts",
-    "scan": "ts-node script/scan.ts"
+    "diagnose": "ts-node script/diagnose.ts"
   },
   "dependencies": {},
   "devDependencies": {

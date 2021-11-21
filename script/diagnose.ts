@@ -1,29 +1,63 @@
 import * as ts from 'typescript'
-import replace from '../replace'
+import * as fs from 'fs'
+import { decodeType, inCoverage } from '../util'
 
-const TMP_FILE_PATH = './tmp/diagnose.ts'
+const DUMMY_FILE_PATH = '/tmp.ts'
+
+function visit(node: ts.Node, storage: [string, string][]) {
+  const result = inCoverage(node)
+  if (result) {
+    const [, , convert] = result
+    convert(decodeType(storage.shift()![1]))
+  }
+  ts.forEachChild(node, (e) => visit(e, storage))
+}
 
 function compile(
-  storageFileName: string,
   fileName: string,
+  storageFileName: string,
   options: ts.CompilerOptions,
 ): void {
-  replace(storageFileName, fileName, TMP_FILE_PATH, options)
-  const program = ts.createProgram([TMP_FILE_PATH], options)
-  const emitResult = program.emit()
-  const allDiagnostics = ts
-    .getPreEmitDiagnostics(program)
-    .concat(emitResult.diagnostics)
-  console.log(`Total Diagnostics Count: ${allDiagnostics.length}`)
+  const dict = JSON.parse(fs.readFileSync(storageFileName, 'utf-8'))
+  const text = fs.readFileSync(fileName, 'utf-8')
+  const ast = ts.createSourceFile(DUMMY_FILE_PATH, text, ts.ScriptTarget.Latest);
+  visit(ast, dict)
+
+  const realHost = ts.createCompilerHost(options, true);
+
+  const host: ts.CompilerHost = {
+    fileExists: filePath => filePath === DUMMY_FILE_PATH || realHost.fileExists(filePath),
+    directoryExists: realHost.directoryExists && realHost.directoryExists.bind(realHost),
+    getCurrentDirectory: realHost.getCurrentDirectory.bind(realHost),
+    getDirectories: realHost.getDirectories!.bind(realHost),
+    getCanonicalFileName: fileName => realHost.getCanonicalFileName(fileName),
+    getNewLine: realHost.getNewLine.bind(realHost),
+    getDefaultLibFileName: realHost.getDefaultLibFileName.bind(realHost),
+    getSourceFile: (fileName, languageVersion, onError, shouldCreateNewSourceFile) => fileName === DUMMY_FILE_PATH
+      ? ast
+      : realHost.getSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile),
+    readFile: filePath => filePath === DUMMY_FILE_PATH
+      ? text
+      : realHost.readFile(filePath),
+    useCaseSensitiveFileNames: () => realHost.useCaseSensitiveFileNames(),
+    writeFile: () => {},
+  };
+
+  const program = ts.createProgram({
+    options,
+    rootNames: [DUMMY_FILE_PATH],
+    host
+  });
+  const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed})
+  const res = printer.printNode(ts.EmitHint.Unspecified, ast, ast)
+  const diagnostics = ts.getPreEmitDiagnostics(program)
+  console.log(`Total Diagnostics Count: ${diagnostics.length}`)
 }
 
 compile(
   process.argv[2],
   process.argv[3],
   {
-    target: ts.ScriptTarget.ES5,
-    module: ts.ModuleKind.CommonJS,
     allowJs: true,
-    noEmit: true,
   },
 )
