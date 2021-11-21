@@ -6,13 +6,13 @@ $ yarn install
 ## Usage
 #### Compile TS file to JS
 ```bash
-$ yarn toJS {input file path}
+$ yarn compile {input file path}
 ```
-Example: `$ yarn toJS input/quicksort.ts`
+Example: `$ yarn compile input/quicksort.ts`
 
 #### Generate type dictionary from JS file
 ```bash
-$ yarn genDict {input file path} {output file path}
+$ yarn dict {input file path} {output file path}
 ```
-Example: `$ yarn genDict input/quicksort.ts output/data.json`
+Example: `$ yarn dict input/quicksort.ts output/data.json`
 
