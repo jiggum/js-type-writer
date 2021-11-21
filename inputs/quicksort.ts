@@ -1,6 +1,6 @@
 export const quickSort = (arr: number[], left: number, right: number) => {
-  let pivot,
-    partitionIndex;
+  let pivot : number;
+  let partitionIndex;
 
   if (left < right) {
     pivot = right;
@@ -18,7 +18,7 @@ const partition = (arr: number[], pivot: number, left: number, right: number) =>
   var pivotValue = arr[pivot],
     partitionIndex = left;
 
-  for (var i = left; i < right; i++) {
+  for (var i: number = left; i < right; i++) {
     if (arr[i] < pivotValue) {
       swap(arr, i, partitionIndex);
       partitionIndex++;

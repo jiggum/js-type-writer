@@ -1,32 +1,38 @@
-import * as ts from "typescript";
+import * as ts from 'typescript'
 
-function compile(fileNames: string[], options: ts.CompilerOptions): void {
-  let program = ts.createProgram(fileNames, options);
-  let emitResult = program.emit();
+type TDictionary = { [pos: number]: ts.SyntaxKind }
 
-  let allDiagnostics = ts
-    .getPreEmitDiagnostics(program)
-    .concat(emitResult.diagnostics);
-  allDiagnostics.forEach(diagnostic => {
-    if (diagnostic.file) {
-      let { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
-      let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-      console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+function visit(node: ts.Node, dict: TDictionary) {
+  if (ts.isVariableDeclaration(node)) {
+    if (ts.isIdentifier(node.name)) {
+      if (node.type?.kind === ts.SyntaxKind.NumberKeyword) {
+        console.log(node.name.text, node.type?.kind)
+        // @ts-ignore
+        node.type = ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+      }
     } else {
-      console.log(ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+      throw Error(`Unhandled Node kind: ${node.kind}`)
     }
-  });
-
-  let exitCode = emitResult.emitSkipped ? 1 : 0;
-  console.log(`Process exiting with code '${exitCode}'.`);
-  process.exit(exitCode);
+  }
+  ts.forEachChild(node, (e) => visit(e, dict))
 }
 
-compile(process.argv.slice(2), {
+function compile(fileName: string, options: ts.CompilerOptions): void {
+  const dict = {}
+  let program = ts.createProgram([fileName], options)
+  const sourceFile = program.getSourceFile(fileName)!
+  visit(sourceFile, dict)
+
+  const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed})
+  const result = printer.printNode(ts.EmitHint.Unspecified, sourceFile, sourceFile)
+  console.log(result)
+}
+
+compile(process.argv[2], {
   noEmitOnError: true,
   noImplicitAny: true,
   target: ts.ScriptTarget.ES5,
   module: ts.ModuleKind.CommonJS,
   allowJs: true,
   outDir: 'output'
-});
+})
