@@ -25,10 +25,6 @@ function compile(
   fs.writeFileSync(storageFileName, JSON.stringify(storage), 'utf-8')
 }
 
-compile(
-  process.argv[2],
-  process.argv[3],
-  {
-    allowJs: true,
-  },
-)
+compile(process.argv[2], process.argv[3], {
+  allowJs: true,
+})

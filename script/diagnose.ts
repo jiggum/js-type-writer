@@ -34,17 +34,13 @@ function compile(
     getCanonicalFileName: (fileName) => realHost.getCanonicalFileName(fileName),
     getNewLine: realHost.getNewLine.bind(realHost),
     getDefaultLibFileName: realHost.getDefaultLibFileName.bind(realHost),
-    getSourceFile:
-      (fileName, languageVersion, onError, shouldCreateNewSourceFile) =>
-        (fileName === DUMMY_FILE_PATH
-          ? ast
-          : realHost.getSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile)),
-    readFile: (filePath) => (filePath === DUMMY_FILE_PATH
-      ? text
-      : realHost.readFile(filePath)),
+    getSourceFile: (fileName, languageVersion, onError, shouldCreateNewSourceFile) =>
+      fileName === DUMMY_FILE_PATH
+        ? ast
+        : realHost.getSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile),
+    readFile: (filePath) => (filePath === DUMMY_FILE_PATH ? text : realHost.readFile(filePath)),
     useCaseSensitiveFileNames: () => realHost.useCaseSensitiveFileNames(),
-    writeFile: () => {
-    },
+    writeFile: () => {},
   }
 
   const program = ts.createProgram({
@@ -57,10 +53,6 @@ function compile(
   console.log(`Total Diagnostics Count: ${diagnostics.length}`)
 }
 
-compile(
-  process.argv[2],
-  process.argv[3],
-  {
-    allowJs: true,
-  },
-)
+compile(process.argv[2], process.argv[3], {
+  allowJs: true,
+})
