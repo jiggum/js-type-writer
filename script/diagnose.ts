@@ -7,7 +7,7 @@ const DUMMY_FILE_PATH = '/tmp.ts'
 function visit(node: ts.Node, reversedStorage: [string, string][]) {
   const result = inCoverage(node)
   if (result) {
-    const [, , convert] = result
+    const [, convert] = result
     convert(decodeType(reversedStorage.pop()![1]))
   }
   ts.forEachChild(node, (e) => visit(e, reversedStorage))
@@ -49,7 +49,6 @@ function compile(
     host
   });
   const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed})
-  const res = printer.printNode(ts.EmitHint.Unspecified, ast, ast)
   const diagnostics = ts.getPreEmitDiagnostics(program)
   console.log(`Total Diagnostics Count: ${diagnostics.length}`)
 }

@@ -7,7 +7,7 @@ const DUMMY_FILE_PATH = '/tmp.ts'
 function visit(node: ts.Node, reversedStorage: [string, string][]) {
   const result = inCoverage(node)
   if (result) {
-    const [, , convert] = result
+    const [, convert] = result
     convert(decodeType(reversedStorage.pop()![1]))
   }
   ts.forEachChild(node, (e) => visit(e, reversedStorage))
