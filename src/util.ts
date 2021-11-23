@@ -1,7 +1,7 @@
 import * as ts from 'typescript'
 
 export const inCoverage = (node: ts.Node): undefined | [string, (to: ts.Node) => void] => {
-  if (ts.isVariableDeclaration(node)) {
+  if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
     if (ts.isIdentifier(node.name)) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -23,5 +23,6 @@ export const decodeType = (str: string): ts.TypeNode => {
   if (str === 'any') {
     return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
   }
-  throw Error(`Unhandled type string: ${str}`)
+  // throw Error(`Unhandled type string: ${str}`)
+  return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 }
