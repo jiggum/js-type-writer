@@ -13,10 +13,10 @@
   },
   "homepage": "https://github.com/jiggum/js-type-writer",
   "scripts": {
-    "dict": "ts-node script/dict.ts",
-    "compile": "ts-node script/compile.ts",
-    "replace": "ts-node script/replace.ts",
-    "diagnose": "ts-node script/diagnose.ts"
+    "dict": "NODE_PATH=./ ts-node script/dict.ts",
+    "compile": "NODE_PATH=./ ts-node script/compile.ts",
+    "replace": "NODE_PATH=./ ts-node script/replace.ts",
+    "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts"
   },
   "dependencies": {},
   "devDependencies": {

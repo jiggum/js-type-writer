@@ -1,6 +1,6 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import { inCoverage, decodeType } from '../util'
+import { inCoverage, decodeType } from 'src/util'
 
 const DUMMY_FILE_PATH = '/tmp.ts'
 

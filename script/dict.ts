@@ -1,6 +1,6 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import { inCoverage, encodeType } from '../util'
+import { inCoverage, encodeType } from 'src/util'
 
 function visit(node: ts.Node, storage: [string, string][]) {
   const result = inCoverage(node)
