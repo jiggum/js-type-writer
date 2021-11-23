@@ -18,10 +18,17 @@
     "replace": "NODE_PATH=./ ts-node script/replace.ts",
     "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^16.11.9",
-    "ts-node": "^10.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.3",
+    "ts-node": "^10.4.0"
+  },
+  "dependencies": {
     "typescript": "^4.5.2"
   }
 }

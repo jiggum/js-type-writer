@@ -20,7 +20,7 @@ function compile(
   options: ts.CompilerOptions,
 ): void {
   const reversedStorage = JSON.parse(fs.readFileSync(storageFileName, 'utf-8')).reverse()
-  let program = ts.createProgram([inputFileName], options)
+  const program = ts.createProgram([inputFileName], options)
   const sourceFile = program.getSourceFile(inputFileName)!
   const dummyFile = ts.createSourceFile(DUMMY_FILE_PATH, '', ts.ScriptTarget.Latest, false, ts.ScriptKind.TS)
   visit(sourceFile, reversedStorage)
