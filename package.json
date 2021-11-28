@@ -17,7 +17,8 @@
     "compile": "NODE_PATH=./ ts-node script/compile.ts",
     "replace": "NODE_PATH=./ ts-node script/replace.ts",
     "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts",
-    "example/randomSeed": "NODE_PATH=./ ts-node example/randomSeed.ts"
+    "example/seed": "NODE_PATH=./ ts-node example/seed.ts",
+    "example/crossover": "NODE_PATH=./ ts-node example/crossover.ts"
   },
   "devDependencies": {
     "@types/node": "^16.11.9",

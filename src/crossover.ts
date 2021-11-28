@@ -1,4 +1,5 @@
 import * as ts from 'typescript'
+import { inCoverage } from 'src/util'
 
 const defaultWeightByDepth = () => 1
 
@@ -24,7 +25,7 @@ export const crossover = (
   astA: ts.Node,
   astB: ts.Node,
   totalNodeCount: number,
-  weightByDepth: (deapth: number) => number = defaultWeightByDepth,
+  weightByDepth: (depth: number) => number = defaultWeightByDepth,
 ) => {
   let slicePoint: number
   let parentA: ts.Node
@@ -36,6 +37,8 @@ export const crossover = (
 
     const visit = (parent: ts.Node, node: ts.Node, depth: number) => {
       if (terminated) return
+      // Ignore covered nodes due to possibility changing structure under the node
+      if (inCoverage(node)) return
 
       slicePointCounter = slicePointCounter + 1
       const weight = weightByDepth(depth)
@@ -63,29 +66,34 @@ export const crossover = (
 
     const visit = (parentB: ts.Node, node: ts.Node) => {
       if (terminated) return
+      // Ignore covered nodes due to possibility changing structure under the node
+      if (inCoverage(node)) return
 
       slicePointCounter = slicePointCounter + 1
       if (slicePointCounter == slicePoint) {
         const keys = Object.keys(parentA).filter((key) => !nodeKeys.has(key))
-        console.log(Object.keys(parentA), keys)
-        keys.forEach((key) => {
+        terminated = true
+        for (const key of keys) {
           // @ts-ignore
           const targetA = parentA[key]
+          // @ts-ignore
+          const targetB = parentB[key]
           if (targetA === childA) {
             // @ts-ignore
             parentA[key] = node
             // @ts-ignore
             parentB[key] = childA
+            break
           }
-          if (Array.isArray(targetA)) {
+          if (Array.isArray(targetA) && Array.isArray(targetB)) {
             const targetIndex = targetA.indexOf(childA)
-            // @ts-ignore
-            targetA[targetIndex] = node
-            // @ts-ignore
-            parentB[key][targetIndex] = childA
+            if (targetIndex > 0) {
+              targetA[targetIndex] = node
+              targetB[targetIndex] = childA
+              break
+            }
           }
-        })
-        terminated = true
+        }
       }
       ts.forEachChild(node, (e) => visit(node, e))
     }

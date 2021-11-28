@@ -35,6 +35,8 @@ export const getTotalNodeCount = (root: ts.Node) => {
   let count = -1
 
   const visit = (node: ts.Node) => {
+    // Ignore covered nodes due to possibility changing structure under the node
+    if (inCoverage(node)) return
     count = count + 1
     ts.forEachChild(node, visit)
   }

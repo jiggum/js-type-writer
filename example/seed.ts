@@ -7,4 +7,4 @@ const program = ts.createProgram([inputFileName], {
   allowJs: true,
 })
 const ast = randomSeed(program.getSourceFile(inputFileName)!)
-writeFile('output/randomSeed.example.ts', ast)
+writeFile('output/seed.example.ts', ast)
