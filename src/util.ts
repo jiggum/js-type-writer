@@ -9,6 +9,10 @@ export const inCoverage = (
   if (ts.isVariableDeclaration(node) && ts.isFunctionLike(node.initializer)) {
     return undefined
   }
+  if (ts.isFunctionDeclaration(node)) {
+    // @ts-ignore
+    return [node.name?.escapedText ?? '', (to) => (node.type = to), node.type]
+  }
   if (ts.isArrowFunction(node)) {
     // @ts-ignore
     return [node.name ?? '', (to) => (node.type = to), node.type]
