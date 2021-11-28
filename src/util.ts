@@ -3,18 +3,20 @@ import * as fs from 'fs'
 
 const DUMMY_FILE_PATH = '/tmp.ts'
 
-export const inCoverage = (node: ts.Node): undefined | [string, (to: ts.Node) => void] => {
+export const inCoverage = (
+  node: ts.Node,
+): undefined | [string, (to: ts.Node) => void, ts.TypeNode] => {
   if (ts.isVariableDeclaration(node) && ts.isFunctionLike(node.initializer)) {
     return undefined
   }
   if (ts.isArrowFunction(node)) {
     // @ts-ignore
-    return [node.name ?? '', (to) => (node.type = to)]
+    return [node.name ?? '', (to) => (node.type = to), node.type]
   }
   if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
     if (ts.isIdentifier(node.name)) {
       // @ts-ignore
-      return [node.name.escapedText ?? '', (to) => (node.type = to)]
+      return [node.name.escapedText ?? '', (to) => (node.type = to), node.type]
     } else {
       throw Error(`Unhandled Node kind: ${node.kind}`)
     }
@@ -47,8 +49,20 @@ const typeKinds = [
   ts.SyntaxKind.ArrayType,
 ]
 
-export const randomType = () => {
-  const kind = typeKinds[Math.floor(Math.random() * typeKinds.length)]
+const keywordTypeKinds = [
+  ts.SyntaxKind.BooleanKeyword,
+  ts.SyntaxKind.NumberKeyword,
+  ts.SyntaxKind.StringKeyword,
+  ts.SyntaxKind.SymbolKeyword,
+  ts.SyntaxKind.UndefinedKeyword,
+  ts.SyntaxKind.VoidKeyword,
+  ts.SyntaxKind.UnknownKeyword,
+]
+
+export const randomType = (onlyKeyword = false) => {
+  const kind = (onlyKeyword ? keywordTypeKinds : typeKinds)[
+    Math.floor(Math.random() * typeKinds.length)
+  ]
   if (
     kind === ts.SyntaxKind.BooleanKeyword ||
     kind === ts.SyntaxKind.NumberKeyword ||
@@ -65,7 +79,31 @@ export const randomType = () => {
       ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
     )
   }
-  throw 'Unreachable Exception'
+  throw 'Unreachable Exception on randomType'
+}
+
+export const isSameType = (typeA: ts.TypeNode, typeB: ts.TypeNode): boolean => {
+  const kind = typeA.kind
+  if (
+    kind === ts.SyntaxKind.BooleanKeyword ||
+    kind === ts.SyntaxKind.NumberKeyword ||
+    kind === ts.SyntaxKind.StringKeyword ||
+    kind === ts.SyntaxKind.SymbolKeyword ||
+    kind === ts.SyntaxKind.UndefinedKeyword ||
+    kind === ts.SyntaxKind.VoidKeyword ||
+    kind === ts.SyntaxKind.UnknownKeyword ||
+    kind === ts.SyntaxKind.AnyKeyword
+  ) {
+    return typeA.kind == typeB.kind
+  }
+  if (kind === ts.SyntaxKind.ArrayType) {
+    if (ts.isArrayTypeNode(typeA) && ts.isArrayTypeNode(typeB)) {
+      return isSameType(typeA.elementType, typeB.elementType)
+    } else {
+      return false
+    }
+  }
+  throw `Unreachable Exception on isSameType. Type kind:${kind}`
 }
 
 export const writeFile = (fineName: string, ast: ts.Node) => {
