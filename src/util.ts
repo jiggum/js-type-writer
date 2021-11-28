@@ -106,20 +106,7 @@ export const isSameType = (typeA: ts.TypeNode, typeB: ts.TypeNode): boolean => {
   throw `Unreachable Exception on isSameType. Type kind:${kind}`
 }
 
-export const writeFile = (fineName: string, ast: ts.Node) => {
-  const dummyFile = ts.createSourceFile(
-    DUMMY_FILE_PATH,
-    '',
-    ts.ScriptTarget.Latest,
-    false,
-    ts.ScriptKind.TS,
-  )
-  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
-  const text = printer.printNode(ts.EmitHint.Unspecified, ast, dummyFile)
-  fs.writeFileSync(fineName, text, 'utf8')
-}
-
-export const clone = (ast: ts.Node) => {
+export const getCode = (ast: ts.Node) => {
   const dummyFile = ts.createSourceFile(
     DUMMY_FILE_PATH,
     '',
@@ -128,6 +115,15 @@ export const clone = (ast: ts.Node) => {
     ts.ScriptKind.TS,
   )
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed })
-  const text = printer.printNode(ts.EmitHint.Unspecified, ast, dummyFile)
+  return printer.printNode(ts.EmitHint.Unspecified, ast, dummyFile)
+}
+
+export const writeFile = (fineName: string, ast: ts.Node) => {
+  const text = getCode(ast)
+  fs.writeFileSync(fineName, text, 'utf8')
+}
+
+export const clone = (ast: ts.Node) => {
+  const text = getCode(ast)
   return ts.createSourceFile(DUMMY_FILE_PATH, text, ts.ScriptTarget.Latest)
 }
