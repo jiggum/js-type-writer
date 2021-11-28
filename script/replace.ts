@@ -1,8 +1,6 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import { inCoverage, decodeType } from 'src/util'
-
-const DUMMY_FILE_PATH = '/tmp.ts'
+import { inCoverage, decodeType, writeFile } from 'src/util'
 
 function visit(node: ts.Node, reversedStorage: [string, string][]) {
   const result = inCoverage(node)
@@ -22,17 +20,8 @@ function compile(
   const reversedStorage = JSON.parse(fs.readFileSync(storageFileName, 'utf-8')).reverse()
   const program = ts.createProgram([inputFileName], options)
   const sourceFile = program.getSourceFile(inputFileName)!
-  const dummyFile = ts.createSourceFile(
-    DUMMY_FILE_PATH,
-    '',
-    ts.ScriptTarget.Latest,
-    false,
-    ts.ScriptKind.TS,
-  )
   visit(sourceFile, reversedStorage)
-  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed })
-  const text = printer.printNode(ts.EmitHint.Unspecified, sourceFile, dummyFile)
-  fs.writeFileSync(outputFileName, text, 'utf8')
+  writeFile(outputFileName, sourceFile)
 }
 
 compile(process.argv[2], process.argv[3], process.argv[4], {

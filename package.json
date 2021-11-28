@@ -16,7 +16,8 @@
     "dict": "NODE_PATH=./ ts-node script/dict.ts",
     "compile": "NODE_PATH=./ ts-node script/compile.ts",
     "replace": "NODE_PATH=./ ts-node script/replace.ts",
-    "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts"
+    "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts",
+    "example/randomSeed": "NODE_PATH=./ ts-node example/randomSeed.ts"
   },
   "devDependencies": {
     "@types/node": "^16.11.9",
