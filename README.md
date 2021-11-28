@@ -7,6 +7,13 @@ $ yarn install
 ```
 
 ## Usage
+### Examples
+**Command**: `yarn example/{target}`
+- `yarn example/seed`
+- `yarn example/mutate`
+- `yarn example/crossover`
+- `yarn example/fitness`
+
 ### Compile TS file to JS
 `yarn compile {input .ts file path}`
 ```bash

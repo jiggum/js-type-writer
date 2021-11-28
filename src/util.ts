@@ -60,9 +60,8 @@ const keywordTypeKinds = [
 ]
 
 export const randomType = (onlyKeyword = false) => {
-  const kind = (onlyKeyword ? keywordTypeKinds : typeKinds)[
-    Math.floor(Math.random() * typeKinds.length)
-  ]
+  const kinds = onlyKeyword ? keywordTypeKinds : typeKinds
+  const kind = kinds[Math.floor(Math.random() * kinds.length)]
   if (
     kind === ts.SyntaxKind.BooleanKeyword ||
     kind === ts.SyntaxKind.NumberKeyword ||
@@ -79,7 +78,7 @@ export const randomType = (onlyKeyword = false) => {
       ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
     )
   }
-  throw 'Unreachable Exception on randomType'
+  throw `Unreachable Exception on randomType. Type kind:${kind}`
 }
 
 export const isSameType = (typeA: ts.TypeNode, typeB: ts.TypeNode): boolean => {
