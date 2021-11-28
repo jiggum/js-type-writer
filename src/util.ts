@@ -30,22 +30,6 @@ export const decodeType = (str: string): ts.TypeNode => {
   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 }
 
-// Get total Nodes' count except the root node
-export const getTotalNodeCount = (root: ts.Node) => {
-  let count = -1
-
-  const visit = (node: ts.Node) => {
-    // Ignore covered nodes due to possibility changing structure under the node
-    if (inCoverage(node)) return
-    count = count + 1
-    ts.forEachChild(node, visit)
-  }
-
-  visit(root)
-
-  return count
-}
-
 const typeKinds = [
   ts.SyntaxKind.BooleanKeyword,
   ts.SyntaxKind.NumberKeyword,
@@ -86,7 +70,20 @@ export const writeFile = (fineName: string, ast: ts.Node) => {
     false,
     ts.ScriptKind.TS,
   )
-  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed })
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
   const text = printer.printNode(ts.EmitHint.Unspecified, ast, dummyFile)
   fs.writeFileSync(fineName, text, 'utf8')
+}
+
+export const clone = (ast: ts.Node) => {
+  const dummyFile = ts.createSourceFile(
+    DUMMY_FILE_PATH,
+    '',
+    ts.ScriptTarget.Latest,
+    false,
+    ts.ScriptKind.TS,
+  )
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed })
+  const text = printer.printNode(ts.EmitHint.Unspecified, ast, dummyFile)
+  return ts.createSourceFile(DUMMY_FILE_PATH, text, ts.ScriptTarget.Latest)
 }
