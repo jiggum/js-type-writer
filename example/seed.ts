@@ -1,10 +1,7 @@
-import * as ts from 'typescript'
 import { randomSeed } from 'src/seed'
 import { writeFile } from 'src/util'
+import { readFileSync } from 'fs'
 
-const inputFileName = 'input/quicksort.js'
-const program = ts.createProgram([inputFileName], {
-  allowJs: true,
-})
-const ast = randomSeed(program.getSourceFile(inputFileName)!)
+const code = readFileSync('input/quicksort.js').toString()
+const ast = randomSeed(code)
 writeFile('output/seed.example.ts', ast)
