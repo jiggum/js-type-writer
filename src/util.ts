@@ -26,3 +26,17 @@ export const decodeType = (str: string): ts.TypeNode => {
   // throw Error(`Unhandled type string: ${str}`)
   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 }
+
+// Get total Nodes' count except the root node
+export const getTotalNodeCount = (root: ts.Node) => {
+  let count = -1
+
+  const visit = (node: ts.Node) => {
+    count = count + 1
+    ts.forEachChild(node, visit)
+  }
+
+  visit(root)
+
+  return count
+}
