@@ -16,7 +16,11 @@
     "dict": "NODE_PATH=./ ts-node script/dict.ts",
     "compile": "NODE_PATH=./ ts-node script/compile.ts",
     "replace": "NODE_PATH=./ ts-node script/replace.ts",
-    "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts"
+    "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts",
+    "example/seed": "NODE_PATH=./ ts-node example/seed.ts",
+    "example/crossover": "NODE_PATH=./ ts-node example/crossover.ts",
+    "example/mutate": "NODE_PATH=./ ts-node example/mutate.ts",
+    "example/fitness": "NODE_PATH=./ ts-node example/fitness.ts"
   },
   "devDependencies": {
     "@types/node": "^16.11.9",

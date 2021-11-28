@@ -14,7 +14,7 @@ export const quickSort = (arr: number[], left: number, right: number) => {
   return arr;
 }
 
-const partition = (arr: number[], pivot: number, left: number, right: number) => {
+function partition(arr: number[], pivot: number, left: number, right: number) {
   var pivotValue = arr[pivot],
     partitionIndex = left;
 
