@@ -4,9 +4,15 @@ import * as fs from 'fs'
 const DUMMY_FILE_PATH = '/tmp.ts'
 
 export const inCoverage = (node: ts.Node): undefined | [string, (to: ts.Node) => void] => {
+  if (ts.isVariableDeclaration(node) && ts.isFunctionLike(node.initializer)) {
+    return undefined
+  }
+  if (ts.isArrowFunction(node)) {
+    // @ts-ignore
+    return [node.name ?? '', (to) => (node.type = to)]
+  }
   if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
     if (ts.isIdentifier(node.name)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       return [node.name.escapedText ?? '', (to) => (node.type = to)]
     } else {
