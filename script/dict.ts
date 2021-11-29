@@ -1,15 +1,6 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import { inCoverage } from 'src/util'
-
-function visit(node: ts.Node, storage: [string, string][], checker: ts.TypeChecker) {
-  const result = inCoverage(node)
-  if (result) {
-    const [label] = result
-    storage.push([label, checker.typeToString(checker.getTypeAtLocation(node))])
-  }
-  ts.forEachChild(node, (e) => visit(e, storage, checker))
-}
+import { inCoverage, traverse } from 'src/util'
 
 function compile(
   inputFileName: string,
@@ -20,7 +11,14 @@ function compile(
   const program = ts.createProgram([inputFileName], options)
   const checker = program.getTypeChecker()
   const sourceFile = program.getSourceFile(inputFileName)!
-  visit(sourceFile, storage, checker)
+
+  traverse(sourceFile, (node) => {
+    const result = inCoverage(node)
+    if (result) {
+      const [label] = result
+      storage.push([label, checker.typeToString(checker.getTypeAtLocation(node))])
+    }
+  })
 
   fs.writeFileSync(storageFileName, JSON.stringify(storage), 'utf-8')
 }

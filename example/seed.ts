@@ -4,4 +4,4 @@ import { readFileSync } from 'fs'
 
 const code = readFileSync('input/quicksort.js').toString()
 const ast = randomSeed(code)
-writeFile('output/seed.example.ts', ast)
+writeFile('output/seed.example.output.ts', ast)

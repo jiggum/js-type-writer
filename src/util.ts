@@ -42,39 +42,27 @@ export const decodeType = (str: string): ts.TypeNode => {
   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 }
 
-const typeKinds = [
+const supportedKnownKeywordTypeKinds = [
   ts.SyntaxKind.BooleanKeyword,
   ts.SyntaxKind.NumberKeyword,
   ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.SymbolKeyword,
   ts.SyntaxKind.UndefinedKeyword,
   ts.SyntaxKind.VoidKeyword,
-  ts.SyntaxKind.UnknownKeyword,
-  ts.SyntaxKind.ArrayType,
 ]
+const supportedKeywordTypeKinds = [...supportedKnownKeywordTypeKinds, ts.SyntaxKind.UnknownKeyword]
+const supportedKeywordTypeKindsSet = new Set(supportedKeywordTypeKinds)
 
-const keywordTypeKinds = [
-  ts.SyntaxKind.BooleanKeyword,
-  ts.SyntaxKind.NumberKeyword,
-  ts.SyntaxKind.StringKeyword,
-  ts.SyntaxKind.SymbolKeyword,
-  ts.SyntaxKind.UndefinedKeyword,
-  ts.SyntaxKind.VoidKeyword,
-  ts.SyntaxKind.UnknownKeyword,
-]
+const isSupportedKeywordType = (kind: ts.SyntaxKind): kind is ts.KeywordTypeSyntaxKind =>
+  supportedKeywordTypeKindsSet.has(kind)
 
-export const randomType = (onlyKeyword = false) => {
-  const kinds = onlyKeyword ? keywordTypeKinds : typeKinds
+export const randomType = (onlyKeyword = false, withUnknown = true) => {
+  let kinds = withUnknown ? supportedKeywordTypeKinds : supportedKnownKeywordTypeKinds
+  if (!onlyKeyword) {
+    kinds = [...kinds, ts.SyntaxKind.ArrayType]
+  }
   const kind = kinds[Math.floor(Math.random() * kinds.length)]
-  if (
-    kind === ts.SyntaxKind.BooleanKeyword ||
-    kind === ts.SyntaxKind.NumberKeyword ||
-    kind === ts.SyntaxKind.StringKeyword ||
-    kind === ts.SyntaxKind.SymbolKeyword ||
-    kind === ts.SyntaxKind.UndefinedKeyword ||
-    kind === ts.SyntaxKind.VoidKeyword ||
-    kind === ts.SyntaxKind.UnknownKeyword
-  ) {
+  if (isSupportedKeywordType(kind)) {
     return ts.factory.createKeywordTypeNode(kind)
   }
   if (kind === ts.SyntaxKind.ArrayType) {
@@ -87,21 +75,22 @@ export const randomType = (onlyKeyword = false) => {
 
 export const isSameType = (typeA: ts.TypeNode, typeB: ts.TypeNode): boolean => {
   const kind = typeA.kind
-  if (
-    kind === ts.SyntaxKind.BooleanKeyword ||
-    kind === ts.SyntaxKind.NumberKeyword ||
-    kind === ts.SyntaxKind.StringKeyword ||
-    kind === ts.SyntaxKind.SymbolKeyword ||
-    kind === ts.SyntaxKind.UndefinedKeyword ||
-    kind === ts.SyntaxKind.VoidKeyword ||
-    kind === ts.SyntaxKind.UnknownKeyword ||
-    kind === ts.SyntaxKind.AnyKeyword
-  ) {
+  if (typeA.kind === ts.SyntaxKind.AnyKeyword || isSupportedKeywordType(typeA.kind)) {
     return typeA.kind == typeB.kind
   }
   if (kind === ts.SyntaxKind.ArrayType) {
     if (ts.isArrayTypeNode(typeA) && ts.isArrayTypeNode(typeB)) {
       return isSameType(typeA.elementType, typeB.elementType)
+    } else {
+      return false
+    }
+  }
+  if (kind === ts.SyntaxKind.UnionType) {
+    if (ts.isUnionTypeNode(typeA) && ts.isUnionTypeNode(typeB)) {
+      return (
+        typeA.types.length === typeB.types.length &&
+        typeA.types.every((e, i) => isSameType(e, typeB.types[i]))
+      )
     } else {
       return false
     }
@@ -129,4 +118,17 @@ export const writeFile = (fineName: string, ast: ts.Node) => {
 export const clone = (ast: ts.Node) => {
   const text = getCode(ast)
   return ts.createSourceFile(DUMMY_FILE_PATH, text, ts.ScriptTarget.Latest)
+}
+
+export const traverse = (
+  root: ts.Node,
+  handler: (node: ts.Node, parent: ts.Node | undefined, depth: number) => boolean | void,
+) => {
+  const visit = (node: ts.Node, parent: ts.Node | undefined, depth: number) => {
+    const stop = handler(node, parent, depth)
+    if (!stop) {
+      ts.forEachChild(node, (e) => visit(e, node, depth + 1))
+    }
+  }
+  visit(root, undefined, 0)
 }

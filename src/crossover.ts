@@ -1,4 +1,5 @@
 import * as ts from 'typescript'
+import { traverse } from 'src/util'
 
 const defaultWeightByDepth = () => 1
 
@@ -422,10 +423,9 @@ export const crossover = (
     let slicePointCounter = 0
     let terminated = false
 
-    const visit = (parent: ts.Node, node: ts.Node, depth: number) => {
-      if (terminated) return
-      if (ts.isTypeNode(node)) return
-      if (isCrossoverTargetNode(node)) {
+    traverseOnCrossover(astA, (node, parent, depth) => {
+      if (terminated) return true
+      if (parent) {
         slicePointCounter = slicePointCounter + 1
         const weight = weightByDepth(depth)
         // When each node's weight is 1
@@ -442,19 +442,16 @@ export const crossover = (
           return
         }
       }
-      ts.forEachChild(node, (e) => visit(node, e, depth + 1))
-    }
-    ts.forEachChild(astA, (e) => visit(astA, e, 1))
+    })
   }
 
   const processB = () => {
     let slicePointCounter = 0
     let terminated = false
 
-    const visit = (parentB: ts.Node, node: ts.Node) => {
-      if (terminated) return
-      if (ts.isTypeNode(node)) return
-      if (isCrossoverTargetNode(node)) {
+    traverseOnCrossover(astB, (node, parentB) => {
+      if (terminated) return true
+      if (parentB) {
         slicePointCounter = slicePointCounter + 1
         if (slicePointCounter == slicePoint) {
           const keys = Object.keys(parentA).filter((key) => !nodeKeys.has(key))
@@ -482,9 +479,7 @@ export const crossover = (
           }
         }
       }
-      ts.forEachChild(node, (e) => visit(node, e))
-    }
-    ts.forEachChild(astB, (e) => visit(astB, e))
+    })
   }
 
   processA()
@@ -496,14 +491,21 @@ const isCrossoverTargetNode = (node: ts.Node) => !ts.isTypeNode(node) && targetK
 export const getCrossoverTargetNodeCount = (root: ts.Node) => {
   let count = -1
 
-  const visit = (node: ts.Node) => {
-    if (isCrossoverTargetNode(node)) {
-      count = count + 1
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(root)
+  traverseOnCrossover(root, () => {
+    count = count + 1
+  })
 
   return count
+}
+
+const traverseOnCrossover = (
+  root: ts.Node,
+  handler: (node: ts.Node, parent: ts.Node | undefined, depth: number) => boolean | void,
+) => {
+  traverse(root, (node, parent, depth) => {
+    if (ts.isTypeNode(node)) return true
+    if (isCrossoverTargetNode(node)) {
+      return handler(node, parent, depth)
+    }
+  })
 }

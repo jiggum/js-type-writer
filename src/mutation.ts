@@ -1,20 +1,18 @@
 import * as ts from 'typescript'
-import { inCoverage, isSameType, randomType } from 'src/util'
+import { inCoverage, isSameType, randomType, traverse } from 'src/util'
 
 export const mutateTransform = (root: ts.Node, p: number) => {
-  const visit = (node: ts.Node) => {
+  traverse(root, (node) => {
     const result = inCoverage(node)
     if (result && Math.random() < p) {
       const [, convert] = result
       convert(randomType())
     }
-    ts.forEachChild(node, (e) => visit(e))
-  }
-  visit(root)
+  })
 }
 
 export const mutateUnion = (root: ts.Node, p: number) => {
-  const visit = (node: ts.Node) => {
+  traverse(root, (node) => {
     const result = inCoverage(node)
     if (result && Math.random() < p) {
       const [, convert, prevType] = result
@@ -23,20 +21,18 @@ export const mutateUnion = (root: ts.Node, p: number) => {
         return [prevType]
       })()
       for (let i = 0; i < 10; i = i + 1) {
-        const type = randomType()
+        const type = randomType(false, false)
         if (!prevTypes.some((e) => isSameType(e, type))) {
           convert(ts.factory.createUnionTypeNode([...prevTypes, type]))
           break
         }
       }
     }
-    ts.forEachChild(node, (e) => visit(e))
-  }
-  visit(root)
+  })
 }
 
 export const mutateSharpen = (root: ts.Node, p: number) => {
-  const visit = (node: ts.Node) => {
+  traverse(root, (node) => {
     const result = inCoverage(node)
     if (result && Math.random() < p) {
       const [, convert, prevType] = result
@@ -46,10 +42,8 @@ export const mutateSharpen = (root: ts.Node, p: number) => {
         convert(ts.factory.createUnionTypeNode(nextTypes))
       }
       if (ts.isArrayTypeNode(prevType)) {
-        convert(ts.factory.createArrayTypeNode(randomType(true)))
+        convert(ts.factory.createArrayTypeNode(randomType(true, false)))
       }
     }
-    ts.forEachChild(node, (e) => visit(e))
-  }
-  visit(root)
+  })
 }

@@ -1,15 +1,6 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
-import { inCoverage, decodeType, writeFile } from 'src/util'
-
-function visit(node: ts.Node, reversedStorage: [string, string][]) {
-  const result = inCoverage(node)
-  if (result) {
-    const [, convert] = result
-    convert(decodeType(reversedStorage.pop()![1]))
-  }
-  ts.forEachChild(node, (e) => visit(e, reversedStorage))
-}
+import { inCoverage, decodeType, writeFile, traverse } from 'src/util'
 
 function compile(
   storageFileName: string,
@@ -20,7 +11,15 @@ function compile(
   const reversedStorage = JSON.parse(fs.readFileSync(storageFileName, 'utf-8')).reverse()
   const program = ts.createProgram([inputFileName], options)
   const sourceFile = program.getSourceFile(inputFileName)!
-  visit(sourceFile, reversedStorage)
+
+  traverse(sourceFile, (node) => {
+    const result = inCoverage(node)
+    if (result) {
+      const [, convert] = result
+      convert(decodeType(reversedStorage.pop()![1]))
+    }
+  })
+
   writeFile(outputFileName, sourceFile)
 }
 

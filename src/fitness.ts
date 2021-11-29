@@ -1,5 +1,5 @@
 import * as ts from 'typescript'
-import { clone, getCode } from 'src/util'
+import { clone } from 'src/util'
 
 const DUMMY_FILE_PATH = '/tmp.ts'
 
