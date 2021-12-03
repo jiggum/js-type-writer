@@ -1,7 +1,14 @@
 import * as ts from 'typescript'
 import { resolve } from 'path'
 
-import { clone, getInferredType, inCoverage, isAnyTypeNode, randomType, traverse } from 'src/util'
+import {
+  clone,
+  getInferredTypeNode,
+  inCoverage,
+  isAnyTypeNode,
+  randomType,
+  traverse,
+} from 'src/util'
 
 export const createSeeder = () => {
   const cache: Record<string, ts.SourceFile> = {}
@@ -25,12 +32,11 @@ export const createSeeder = () => {
       traverse(root, (node) => {
         const result = inCoverage(node)
         if (result) {
-          const inferredType = getInferredType(node, checker)
+          const inferredTypeNode = getInferredTypeNode(node, checker)
           const [, convert] = result
 
-          const typeNode = checker.typeToTypeNode(inferredType, node, undefined)
-          if (typeNode != null) {
-            convert(typeNode)
+          if (inferredTypeNode != null) {
+            convert(inferredTypeNode)
           }
         }
       })

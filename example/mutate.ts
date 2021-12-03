@@ -1,10 +1,11 @@
-import { randomSeed } from 'src/seed'
+import { createSeeder } from 'src/seed'
 import { writeFile } from 'src/util'
-import { readFileSync } from 'fs'
+import { resolve } from 'path'
 import { mutateSharpen, mutateTransform, mutateUnion } from 'src/mutation'
 
-const code = readFileSync('input/quicksort.js').toString()
-const ast = randomSeed(code)
+const randomSeed = createSeeder()
+const filepath = resolve(__dirname, '../input/quicksort.js')
+const ast = randomSeed(filepath)
 
 writeFile('output/mutate.example.input.ts', ast)
 mutateTransform(ast, 0.2)
