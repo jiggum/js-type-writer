@@ -1,46 +1,61 @@
 import * as ts from 'typescript'
-import * as path from 'path'
-import * as fs from 'fs'
 
-import { inCoverage, randomType, traverse } from 'src/util'
+import { clone, getInferredType, inCoverage, randomType, traverse } from 'src/util'
 
-const DUMMY_FILE_PATH = '/tmp.ts'
+export const createSeeder = () => {
+  const cache: Record<string, ts.SourceFile> = {}
 
-export const randomSeed = (text: string) => {
-  const root = ts.createSourceFile(DUMMY_FILE_PATH, text, ts.ScriptTarget.Latest)
+  const getInferredSourceFile = (filepath: string) => {
+    if (cache[filepath] == null) {
+      const program = ts.createProgram([filepath], {
+        checkJs: true,
+        allowJs: true,
+      })
+      const checker = program.getTypeChecker()
 
-  traverse(root, (node) => {
-    const result = inCoverage(node)
-    if (result) {
-      const [, convert] = result
-      convert(randomType())
+      const root = program.getSourceFile(filepath)
+
+      if (root == null) {
+        throw '지정된 경로에 파일이 존재하지 않습니다'
+      }
+
+      traverse(root, (node) => {
+        const result = inCoverage(node)
+        if (result) {
+          const inferredType = getInferredType(node, checker)
+          const [, convert] = result
+
+          if (checker.typeToString(inferredType) !== 'any') {
+            const typeNode = randomType()
+            // TODO: convert inferredType to TypeNode
+            convert(typeNode)
+          }
+        }
+      })
+
+      cache[filepath] = root
     }
-  })
 
-  return root
-}
-
-const oldInputPath = path.join(__dirname, '../input/quicksort.js')
-const inputPath = path.join(__dirname, '../input/quicksort.ts')
-
-fs.copyFileSync(oldInputPath, inputPath)
-
-const program = ts.createProgram({
-  options: {
-    allowJs: true,
-    checkJs: true,
-  },
-  rootNames: [inputPath],
-})
-
-const checker = program.getTypeChecker()
-
-function handler(node: ts.Node) {
-  if (ts.isVariableDeclaration(node)) {
-    console.log(
-      checker.typeToString(checker.getApparentType(checker.getTypeAtLocation(node))).toLowerCase(),
-    )
+    return clone(cache[filepath])
   }
-}
 
-traverse(program.getSourceFile(inputPath)!, handler)
+  const randomSeed = (filepath: string) => {
+    const root = getInferredSourceFile(filepath)
+
+    traverse(root, (node) => {
+      const result = inCoverage(node)
+      if (result) {
+        const [, convert] = result
+
+        if (node.type == null) {
+          // TODO: fix type error with some type guard?
+          convert(randomType())
+        }
+      }
+    })
+
+    return root
+  }
+
+  return randomSeed
+}

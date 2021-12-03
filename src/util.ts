@@ -42,6 +42,10 @@ export const decodeType = (str: string): ts.TypeNode => {
   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 }
 
+export const getInferredType = (node: ts.Node, checker: ts.TypeChecker) => {
+  return checker.getApparentType(checker.getTypeAtLocation(node))
+}
+
 const supportedKnownKeywordTypeKinds = [
   ts.SyntaxKind.BooleanKeyword,
   ts.SyntaxKind.NumberKeyword,
