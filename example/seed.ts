@@ -1,7 +1,8 @@
-import { randomSeed } from 'src/seed'
+import { createSeeder } from 'src/seed'
 import { writeFile } from 'src/util'
-import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
-const code = readFileSync('input/quicksort.js').toString()
-const ast = randomSeed(code)
+const randomSeed = createSeeder()
+const filepath = resolve(__dirname, '../input/quicksort.js')
+const ast = randomSeed(filepath)
 writeFile('output/seed.example.output.ts', ast)
