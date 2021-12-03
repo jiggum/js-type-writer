@@ -102,6 +102,10 @@ export const isSameType = (typeA: ts.TypeNode, typeB: ts.TypeNode): boolean => {
   throw `Unreachable Exception on isSameType. Type kind:${kind}`
 }
 
+export const isAnyTypeNode = (typeNode: ts.TypeNode) => {
+  return typeNode.kind === ts.SyntaxKind.AnyKeyword
+}
+
 export const getCode = (ast: ts.Node) => {
   const dummyFile = ts.createSourceFile(
     DUMMY_FILE_PATH,

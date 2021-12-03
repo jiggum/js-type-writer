@@ -1,19 +1,22 @@
 import * as ts from 'typescript'
+import { resolve } from 'path'
 
-import { clone, getInferredType, inCoverage, randomType, traverse } from 'src/util'
+import { clone, getInferredType, inCoverage, isAnyTypeNode, randomType, traverse } from 'src/util'
 
 export const createSeeder = () => {
   const cache: Record<string, ts.SourceFile> = {}
 
   const getInferredSourceFile = (filepath: string) => {
-    if (cache[filepath] == null) {
-      const program = ts.createProgram([filepath], {
+    const absolutePath = resolve(filepath)
+
+    if (cache[absolutePath] == null) {
+      const program = ts.createProgram([absolutePath], {
         checkJs: true,
         allowJs: true,
       })
       const checker = program.getTypeChecker()
 
-      const root = program.getSourceFile(filepath)
+      const root = program.getSourceFile(absolutePath)
 
       if (root == null) {
         throw '지정된 경로에 파일이 존재하지 않습니다'
@@ -25,18 +28,17 @@ export const createSeeder = () => {
           const inferredType = getInferredType(node, checker)
           const [, convert] = result
 
-          if (checker.typeToString(inferredType) !== 'any') {
-            const typeNode = randomType()
-            // TODO: convert inferredType to TypeNode
+          const typeNode = checker.typeToTypeNode(inferredType, node, undefined)
+          if (typeNode != null) {
             convert(typeNode)
           }
         }
       })
 
-      cache[filepath] = root
+      cache[absolutePath] = root
     }
 
-    return clone(cache[filepath])
+    return clone(cache[absolutePath])
   }
 
   const randomSeed = (filepath: string) => {
@@ -45,10 +47,9 @@ export const createSeeder = () => {
     traverse(root, (node) => {
       const result = inCoverage(node)
       if (result) {
-        const [, convert] = result
+        const [, convert, typeNode] = result
 
-        if (node.type == null) {
-          // TODO: fix type error with some type guard?
+        if (typeNode == null || isAnyTypeNode(typeNode)) {
           convert(randomType())
         }
       }
