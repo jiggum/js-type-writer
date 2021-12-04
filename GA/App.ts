@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv'
 import Population, { Individual } from './Population'
 
 import { writeFile } from 'src/util'
-import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 dotenv.config()
 const POP_SIZE = parseInt(process.env.POP_SIZE!)
@@ -46,10 +46,10 @@ function runCycle(population: Population) {
 
 // Main program
 console.log('Program start')
-const initialCode = readFileSync('input/quicksort.js').toString()
+const filepath = resolve(__dirname, '../input/quicksort.js')
 
 let generation = 0
-const population: Population = new Population(initialCode)
+const population: Population = new Population(filepath)
 let stoppingCondition = false
 while (!stoppingCondition) {
   generation++

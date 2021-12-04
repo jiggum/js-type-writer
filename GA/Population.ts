@@ -2,7 +2,7 @@ import * as ts from 'typescript'
 import * as dotenv from 'dotenv'
 
 import { clone } from 'src/util'
-import { randomSeed } from 'src/seed'
+import { createSeeder } from 'src/seed'
 import { crossover, getCrossoverTargetNodeCount } from 'src/crossover'
 import { mutateSharpen, mutateTransform, mutateUnion } from 'src/mutation'
 import { calcFitness } from 'src/fitness'
@@ -19,6 +19,7 @@ const POP_SIZE = parseInt(process.env.POP_SIZE!) // Must be an even number
 const TRANSFORM_RATE = parseInt(process.env.MUTATION_TRANSFORM_RATE!)
 const UNION_RATE = parseInt(process.env.MUTATION_UNION_RATE!)
 const SHARPEN_RATE = parseInt(process.env.MUTATION_SHARPEN_RATE!)
+const randomSeed = createSeeder()
 
 // comparator for sort function - order of increasing fitness
 const compareFitnessInc = (s1: Individual, s2: Individual): number => {
@@ -52,7 +53,7 @@ export default class Population {
   public childPop: Array<Individual>
   private fitsum: number // sum of fitness for all Individuals in this population
 
-  constructor(code: string) {
+  constructor(filepath: string) {
     this.parentPop = [] // Main population - invariant : always sorted, best indiv on the front
     this.matingPool = [] // Individuals chosen as parents are temporarily stored here
     this.childPop = [] // Child population for step 3 - 'produceOffspring'
@@ -60,7 +61,7 @@ export default class Population {
 
     // Init parentPop with new Math.random Individuals
     for (let i = 0; i < POP_SIZE; i++) {
-      const ast = randomSeed(code)
+      const ast = randomSeed(filepath)
       this.parentPop[i] = { ast, fitness: customFitness(ast) }
     }
   }
