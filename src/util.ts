@@ -47,24 +47,19 @@ export const getInferredType = (node: ts.Node, checker: ts.TypeChecker) => {
 }
 
 export const getInferredTypeNode = (node: ts.Node, checker: ts.TypeChecker) => {
-  // if (ts.isFunctionDeclaration(node)) {
-  //   const statements = node.body?.statements
-  //   if (statements != null) {
-  //     const [t] = statements
-  //       .filter(ts.isReturnStatement)
-  //       .map((s) => s.expression)
-  //       .map((n) => checker.getTypeAtLocation(n!))
-  //       .map((t) => checker.getBaseTypeOfLiteralType(t))
-
-  //     return t != null ? checker.typeToTypeNode(t, node.parent, undefined) : ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword)
-  //   }
-  //   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword)
-  // }
-  // if (ts.isArrowFunction(node)) {
-  //   const statements = [node.body]
-  // }
   const t = checker.getTypeAtLocation(node)
-  return checker.typeToTypeNode(t, node.parent, undefined)
+  const typeNode = checker.typeToTypeNode(t, node.parent, undefined)
+  if (ts.isFunctionDeclaration(node)) {
+    if (typeNode && ts.isFunctionTypeNode(typeNode)) {
+      return typeNode.type
+    }
+  }
+  if (ts.isArrowFunction(node)) {
+    if (typeNode && ts.isFunctionTypeNode(typeNode)) {
+      return typeNode.type
+    }
+  }
+  return typeNode
 }
 
 const supportedKnownKeywordTypeKinds = [
