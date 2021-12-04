@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv'
 import Population, { Individual } from './Population'
 
+import { writeFile } from 'src/util'
 import { readFileSync } from 'fs'
 
 dotenv.config()
@@ -65,5 +66,6 @@ while (!stoppingCondition) {
       `Stopping condition reached - Generation ${generation} / Fitness ${bestIndiv.fitness}`,
     )
     stoppingCondition = true
+    writeFile('output/GA.output.ts', bestIndiv.ast)
   }
 }
