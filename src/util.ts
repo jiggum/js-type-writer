@@ -42,6 +42,31 @@ export const decodeType = (str: string): ts.TypeNode => {
   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 }
 
+export const getInferredType = (node: ts.Node, checker: ts.TypeChecker) => {
+  return checker.getApparentType(checker.getTypeAtLocation(node))
+}
+
+export const getInferredTypeNode = (node: ts.Node, checker: ts.TypeChecker) => {
+  // if (ts.isFunctionDeclaration(node)) {
+  //   const statements = node.body?.statements
+  //   if (statements != null) {
+  //     const [t] = statements
+  //       .filter(ts.isReturnStatement)
+  //       .map((s) => s.expression)
+  //       .map((n) => checker.getTypeAtLocation(n!))
+  //       .map((t) => checker.getBaseTypeOfLiteralType(t))
+
+  //     return t != null ? checker.typeToTypeNode(t, node.parent, undefined) : ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword)
+  //   }
+  //   return ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword)
+  // }
+  // if (ts.isArrowFunction(node)) {
+  //   const statements = [node.body]
+  // }
+  const t = checker.getTypeAtLocation(node)
+  return checker.typeToTypeNode(t, node.parent, undefined)
+}
+
 const supportedKnownKeywordTypeKinds = [
   ts.SyntaxKind.BooleanKeyword,
   ts.SyntaxKind.NumberKeyword,
@@ -96,6 +121,10 @@ export const isSameType = (typeA: ts.TypeNode, typeB: ts.TypeNode): boolean => {
     }
   }
   throw `Unreachable Exception on isSameType. Type kind:${kind}`
+}
+
+export const isAnyTypeNode = (typeNode: ts.TypeNode) => {
+  return typeNode.kind === ts.SyntaxKind.AnyKeyword
 }
 
 export const getCode = (ast: ts.Node) => {

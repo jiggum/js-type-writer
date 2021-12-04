@@ -1,11 +1,12 @@
-import { randomSeed } from 'src/seed'
+import { createSeeder } from 'src/seed'
 import { writeFile, clone } from 'src/util'
 import { crossover, getCrossoverTargetNodeCount } from 'src/crossover'
-import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
-const code = readFileSync('input/quicksort.js').toString()
-const astA = randomSeed(code)
-const astB = randomSeed(code)
+const randomSeed = createSeeder()
+const filepath = resolve(__dirname, '../input/quicksort.js')
+const astA = randomSeed(filepath)
+const astB = randomSeed(filepath)
 writeFile('output/crossover.example.input.astA.ts', astA)
 writeFile('output/crossover.example.input.astB.ts', astB)
 
