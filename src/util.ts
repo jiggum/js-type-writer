@@ -5,22 +5,44 @@ const DUMMY_FILE_PATH = '/tmp.ts'
 
 export const inCoverage = (
   node: ts.Node,
-): undefined | [string, (to: ts.Node) => void, ts.TypeNode] => {
+):
+  | undefined
+  | [
+      string,
+      (to: ts.Node) => void,
+      ts.TypeNode | undefined,
+      (node?: ts.TypeNode) => ts.TypeNode | undefined,
+    ] => {
   if (ts.isVariableDeclaration(node) && ts.isFunctionLike(node.initializer)) {
     return undefined
   }
   if (ts.isFunctionDeclaration(node)) {
-    // @ts-ignore
-    return [node.name?.escapedText ?? '', (to) => (node.type = to), node.type]
+    return [
+      node.name?.escapedText ?? '',
+      // @ts-ignore
+      (to) => (node.type = to),
+      node.type,
+      (node) => (node as ts.FunctionTypeNode).type,
+    ]
   }
   if (ts.isArrowFunction(node)) {
-    // @ts-ignore
-    return [node.name ?? '', (to) => (node.type = to), node.type]
+    return [
+      node.name ?? '',
+      // @ts-ignore
+      (to) => (node.type = to),
+      node.type,
+      (node) => (node as ts.FunctionTypeNode).type,
+    ]
   }
   if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
     if (ts.isIdentifier(node.name)) {
-      // @ts-ignore
-      return [node.name.escapedText ?? '', (to) => (node.type = to), node.type]
+      return [
+        node.name.escapedText ?? '',
+        // @ts-ignore
+        (to) => (node.type = to),
+        node.type,
+        (node) => node,
+      ]
     } else {
       throw Error(`Unhandled Node kind: ${node.kind}`)
     }
@@ -48,18 +70,7 @@ export const getInferredType = (node: ts.Node, checker: ts.TypeChecker) => {
 
 export const getInferredTypeNode = (node: ts.Node, checker: ts.TypeChecker) => {
   const t = checker.getTypeAtLocation(node)
-  const typeNode = checker.typeToTypeNode(t, node.parent, undefined)
-  if (ts.isFunctionDeclaration(node)) {
-    if (typeNode && ts.isFunctionTypeNode(typeNode)) {
-      return typeNode.type
-    }
-  }
-  if (ts.isArrowFunction(node)) {
-    if (typeNode && ts.isFunctionTypeNode(typeNode)) {
-      return typeNode.type
-    }
-  }
-  return typeNode
+  return checker.typeToTypeNode(t, node.parent, undefined)
 }
 
 const supportedKnownKeywordTypeKinds = [

@@ -32,8 +32,8 @@ export const createSeeder = () => {
       traverse(root, (node) => {
         const result = inCoverage(node)
         if (result) {
-          const inferredTypeNode = getInferredTypeNode(node, checker)
-          const [, convert] = result
+          const [, convert, , getType] = result
+          const inferredTypeNode = getType(getInferredTypeNode(node, checker))
 
           if (inferredTypeNode != null) {
             convert(inferredTypeNode)
@@ -47,7 +47,7 @@ export const createSeeder = () => {
     return clone(cache[absolutePath])
   }
 
-  const randomSeed = (filepath: string) => {
+  return (filepath: string) => {
     const root = getInferredSourceFile(filepath)
 
     traverse(root, (node) => {
@@ -63,6 +63,4 @@ export const createSeeder = () => {
 
     return root
   }
-
-  return randomSeed
 }

@@ -17,8 +17,8 @@ export const mutateUnion = (root: ts.Node, p: number) => {
     if (result && Math.random() < p) {
       const [, convert, prevType] = result
       const prevTypes = (() => {
-        if (ts.isUnionTypeNode(prevType)) return prevType.types
-        return [prevType]
+        if (ts.isUnionTypeNode(prevType!)) return prevType.types
+        return [prevType!]
       })()
       for (let i = 0; i < 10; i = i + 1) {
         const type = randomType(false, false)
@@ -36,12 +36,12 @@ export const mutateSharpen = (root: ts.Node, p: number) => {
     const result = inCoverage(node)
     if (result && Math.random() < p) {
       const [, convert, prevType] = result
-      if (ts.isUnionTypeNode(prevType)) {
+      if (ts.isUnionTypeNode(prevType!)) {
         const nextTypes = [...prevType.types]
         nextTypes.splice(Math.floor(Math.random() * nextTypes.length), 1)
         convert(ts.factory.createUnionTypeNode(nextTypes))
       }
-      if (ts.isArrayTypeNode(prevType)) {
+      if (ts.isArrayTypeNode(prevType!)) {
         convert(ts.factory.createArrayTypeNode(randomType(true, false)))
       }
     }
