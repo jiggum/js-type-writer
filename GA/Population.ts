@@ -24,9 +24,7 @@ const SHARPEN_RATE = parseInt(process.env.MUTATION_SHARPEN_RATE!)
 const compareFitnessInc = (s1: Individual, s2: Individual): number => {
   const a: number = s1.fitness
   const b: number = s2.fitness
-  if (a < b) return -1
-  else if (a == b) return 0
-  else return 1
+  return a - b
 }
 
 /**
@@ -72,7 +70,6 @@ export default class Population {
     this.fitsum = 0
     for (let i = 0; i < this.parentPop.length; i++) {
       const indiv = this.parentPop[i]
-      indiv.fitness = customFitness(indiv.ast)
       this.fitsum += indiv.fitness
     }
 
@@ -131,8 +128,8 @@ export default class Population {
       const count = getCrossoverTargetNodeCount(parent1.ast)
       const astA = clone(parent1.ast)
       const astB = clone(parent2.ast)
-      const child1: Individual = { ast: astA, fitness: customFitness(astA) }
-      const child2: Individual = { ast: astB, fitness: customFitness(astB) }
+      const child1: Individual = { ast: astA, fitness: 0 }
+      const child2: Individual = { ast: astB, fitness: 0 }
       crossover(child1.ast, child2.ast, count, (depth) => Math.max(10 / (depth * depth), 1))
 
       // 3-2. Mutation
