@@ -13,14 +13,15 @@
   },
   "homepage": "https://github.com/jiggum/js-type-writer",
   "scripts": {
-    "dict": "NODE_PATH=./ ts-node script/dict.ts",
-    "compile": "NODE_PATH=./ ts-node script/compile.ts",
-    "replace": "NODE_PATH=./ ts-node script/replace.ts",
-    "diagnose": "NODE_PATH=./ ts-node script/diagnose.ts",
-    "example/seed": "NODE_PATH=./ ts-node example/seed.ts",
-    "example/crossover": "NODE_PATH=./ ts-node example/crossover.ts",
-    "example/mutate": "NODE_PATH=./ ts-node example/mutate.ts",
-    "example/fitness": "NODE_PATH=./ ts-node example/fitness.ts"
+    "dict": "cross-env NODE_PATH=./ ts-node script/dict.ts",
+    "compile": "cross-env NODE_PATH=./ ts-node script/compile.ts",
+    "replace": "cross-env NODE_PATH=./ ts-node script/replace.ts",
+    "diagnose": "cross-env NODE_PATH=./ ts-node script/diagnose.ts",
+    "example/seed": "cross-env NODE_PATH=./ ts-node example/seed.ts",
+    "example/crossover": "cross-env NODE_PATH=./ ts-node example/crossover.ts",
+    "example/mutate": "cross-env NODE_PATH=./ ts-node example/mutate.ts",
+    "example/fitness": "cross-env NODE_PATH=./ ts-node example/fitness.ts",
+    "GA": "cross-env NODE_PATH=./ ts-node GA/App.ts"
   },
   "devDependencies": {
     "@types/node": "^16.11.9",
@@ -36,6 +37,8 @@
     "ts-node": "^10.4.0"
   },
   "dependencies": {
+    "cross-env": "^7.0.3",
+    "dotenv": "^10.0.0",
     "typescript": "^4.5.2"
   }
 }
