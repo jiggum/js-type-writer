@@ -6,8 +6,8 @@ import { readFileSync } from 'fs'
 
 dotenv.config()
 const POP_SIZE = parseInt(process.env.POP_SIZE!)
-const parentSelectionChoice = 0
-const generationSelectionChoice = 0
+const parentSelectionChoice = 0 // ⚡️ hyperparameter
+const generationSelectionChoice = 0 // ⚡️ hyperparameter
 
 // Main program loop - Evolutionary cycle
 function runCycle(population: Population) {
@@ -22,7 +22,7 @@ function runCycle(population: Population) {
       break
     case 1 as number:
       // select by tournament (slower)
-      population.selectParents.tournament.call(population, POP_SIZE / 2)
+      population.selectParents.tournament.call(population, POP_SIZE / 2) // ⚡️ hyperparameter (select tournament size)
   }
 
   // Step 3. cross-over, mutation
@@ -36,11 +36,11 @@ function runCycle(population: Population) {
       break
     case 1 as number:
       // gradual replacement (control replace size here)
-      population.formNextGeneration.gradual_replacement.call(population, Math.floor(POP_SIZE / 2))
+      population.formNextGeneration.gradual_replacement.call(population, Math.floor(POP_SIZE / 2)) // ⚡️ hyperparameter (select replacement size)
       break
     case 2 as number:
       // elitism (control preserve size here)
-      population.formNextGeneration.elitism.call(population, Math.floor(POP_SIZE / 20))
+      population.formNextGeneration.elitism.call(population, Math.floor(POP_SIZE / 20)) // ⚡️ hyperparameter (select elitism size)
   }
 }
 
