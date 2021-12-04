@@ -1,12 +1,11 @@
 import * as dotenv from 'dotenv'
-import Population from './Population'
-import Individual from './Individual'
-import { varEntry } from './types'
+import Population, { Individual } from './Population'
+
+import { readFileSync } from 'fs'
 
 dotenv.config()
 const POP_SIZE = parseInt(process.env.POP_SIZE!)
 const parentSelectionChoice = 0
-const crossoverChoice = 0 // 0 - single-point, 1 - uniform
 const generationSelectionChoice = 0
 
 // Main program loop - Evolutionary cycle
@@ -26,7 +25,7 @@ function runCycle(population: Population) {
   }
 
   // Step 3. cross-over, mutation
-  population.produceOffspring(crossoverChoice)
+  population.produceOffspring()
 
   // Step 4. Select next generation from current parent+offspring population pool
   switch (generationSelectionChoice) {
@@ -45,30 +44,20 @@ function runCycle(population: Population) {
 }
 
 // Main program
-
-// 🐛 Fetch from AST
-const initArr: Array<varEntry> = [
-  ['quickSort', 'any'],
-  ['pivot', 'any'],
-  ['partitionIndex', 'any'],
-  ['partition', 'any'],
-  ['pivotValue', 'any'],
-  ['partitionIndex', 'any'],
-  ['i', 'any'],
-  ['swap', 'any'],
-  ['temp', 'any'],
-]
+console.log('Program start')
+const initialCode = readFileSync('input/quicksort.js').toString()
 
 let generation = 0
-const population: Population = new Population(initArr)
+const population: Population = new Population(initialCode)
 let stoppingCondition = false
 while (!stoppingCondition) {
   generation++
-
+  console.log(`--Generation ${generation} start--`)
   runCycle(population)
 
   // Show individual with best fitness
   const bestIndiv: Individual = population.findBest()
+  console.log(`--Generation ${generation} end / current best fitness ${bestIndiv.fitness}--`)
 
   // 🐛 Stopping condition - target song is found
   if (bestIndiv.fitness < 10) {

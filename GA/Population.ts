@@ -1,9 +1,24 @@
+import * as ts from 'typescript'
 import * as dotenv from 'dotenv'
-import Individual, { crossover, mutation } from './individual'
-import { varEntry } from './types'
+
+import { clone } from 'src/util'
+import { randomSeed } from 'src/seed'
+import { crossover, getCrossoverTargetNodeCount } from 'src/crossover'
+import { mutateSharpen, mutateTransform, mutateUnion } from 'src/mutation'
+import { calcFitness } from 'src/fitness'
+
+type AST = ts.SourceFile
+export interface Individual {
+  ast: AST
+  fitness: number
+}
 
 dotenv.config()
-const POP_SIZE = parseInt(process.env.POP_SIZE!)
+const POP_SIZE = parseInt(process.env.POP_SIZE!) // Must be an even number
+// assert(POP_SIZE % 2 == 0)
+const TRANSFORM_RATE = parseInt(process.env.MUTATION_TRANSFORM_RATE!)
+const UNION_RATE = parseInt(process.env.MUTATION_UNION_RATE!)
+const SHARPEN_RATE = parseInt(process.env.MUTATION_SHARPEN_RATE!)
 
 // comparator for sort function - order of increasing fitness
 const compareFitnessInc = (s1: Individual, s2: Individual): number => {
@@ -12,6 +27,16 @@ const compareFitnessInc = (s1: Individual, s2: Individual): number => {
   if (a < b) return -1
   else if (a == b) return 0
   else return 1
+}
+
+/**
+ * Calculate fitness for given ast
+ * @param {ts.SourceFile} ast - representation (Abstract Syntax Tree)
+ * @returnType {number} fitness
+ */
+const customFitness = (ast: ts.SourceFile): number => {
+  // 🐛 TODO
+  return calcFitness(ast)
 }
 
 /**
@@ -27,26 +52,27 @@ export default class Population {
   public parentPop: Array<Individual>
   public matingPool: Array<Individual>
   public childPop: Array<Individual>
-  private fitsum: number // sum of fitness for all individuals in this population
+  private fitsum: number // sum of fitness for all Individuals in this population
 
-  constructor(initArr: Array<varEntry> | Array<string>) {
+  constructor(code: string) {
     this.parentPop = [] // Main population - invariant : always sorted, best indiv on the front
     this.matingPool = [] // Individuals chosen as parents are temporarily stored here
     this.childPop = [] // Child population for step 3 - 'produceOffspring'
     this.fitsum = 0
 
-    // Init parentPop with new Math.random individuals
+    // Init parentPop with new Math.random Individuals
     for (let i = 0; i < POP_SIZE; i++) {
-      this.parentPop[i] = new Individual(initArr)
+      const ast = randomSeed(code)
+      this.parentPop[i] = { ast, fitness: customFitness(ast) }
     }
   }
 
-  // Step 1. Calculate fitness of each individual in the population
+  // Step 1. Calculate fitness of each Individual in the population
   calPopulationFitness(): void {
     this.fitsum = 0
     for (let i = 0; i < this.parentPop.length; i++) {
       const indiv = this.parentPop[i]
-      indiv.calFitness()
+      indiv.fitness = customFitness(indiv.ast)
       this.fitsum += indiv.fitness
     }
 
@@ -93,28 +119,35 @@ export default class Population {
   }
 
   // Step 3. Produce offspring population - crossover and mutation
-  produceOffspring(option = 0) {
+  produceOffspring() {
     this.childPop = []
 
-    for (let i = 0; i < this.parentPop.length; i++) {
+    for (let i = 1; i < this.parentPop.length; i += 2) {
       const parent1 = sampleRandom<Individual>(this.matingPool)
       const parent2 = sampleRandom<Individual>(this.matingPool)
 
       // 3-1. Cross-over
-      let child: Individual = parent1
-      switch (option) {
-        case 0:
-          child = crossover.singlePoint(parent1, parent2)
-          break
-        case 1:
-          child = crossover.uniform(parent1, parent2)
-      }
+      // let child: Individual = parent1
+      const count = getCrossoverTargetNodeCount(parent1.ast)
+      const astA = clone(parent1.ast)
+      const astB = clone(parent2.ast)
+      const child1: Individual = { ast: astA, fitness: customFitness(astA) }
+      const child2: Individual = { ast: astB, fitness: customFitness(astB) }
+      crossover(child1.ast, child2.ast, count, (depth) => Math.max(10 / (depth * depth), 1))
 
       // 3-2. Mutation
-      mutation.randomFlip(child)
+      mutateTransform(child1.ast, TRANSFORM_RATE)
+      mutateUnion(child1.ast, UNION_RATE)
+      mutateSharpen(child1.ast, SHARPEN_RATE)
 
-      child.calFitness()
-      this.childPop[i] = child
+      mutateTransform(child2.ast, TRANSFORM_RATE)
+      mutateUnion(child2.ast, UNION_RATE)
+      mutateSharpen(child2.ast, SHARPEN_RATE)
+
+      child1.fitness = customFitness(child1.ast)
+      child2.fitness = customFitness(child2.ast)
+      this.childPop[i - 1] = child1
+      this.childPop[i] = child2
     }
   }
 
@@ -125,14 +158,14 @@ export default class Population {
     gradual_replacement: (replaceCnt: number = this.parentPop.length): void => {
       this.childPop.sort(compareFitnessInc)
 
-      // Replace 'replaceCnt' individuals with lowest fitness from parent with same amount of best offsprings
+      // Replace 'replaceCnt' Individuals with lowest fitness from parent with same amount of best offsprings
       for (let i = 0; i < replaceCnt; i++) {
         this.parentPop[i] = this.childPop[i]
       }
     },
 
     // Elitism
-    // Keep 'keepCnt' best individuals from the parent population
+    // Keep 'keepCnt' best Individuals from the parent population
     elitism: (keepCnt: number): void => {
       const N = this.parentPop.length
       for (let i = keepCnt; i < N; i++) {
@@ -141,7 +174,7 @@ export default class Population {
     },
   }
 
-  // Find individual with best fitness
+  // Find Individual with best fitness
   findBest(): Individual {
     this.parentPop.sort(compareFitnessInc)
     return this.parentPop[0]
