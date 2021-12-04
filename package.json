@@ -20,7 +20,8 @@
     "example/seed": "NODE_PATH=./ ts-node example/seed.ts",
     "example/crossover": "NODE_PATH=./ ts-node example/crossover.ts",
     "example/mutate": "NODE_PATH=./ ts-node example/mutate.ts",
-    "example/fitness": "NODE_PATH=./ ts-node example/fitness.ts"
+    "example/fitness": "NODE_PATH=./ ts-node example/fitness.ts",
+    "GA": "NODE_PATH=./ ts-node GA/App.ts"
   },
   "devDependencies": {
     "@types/node": "^16.11.9",
