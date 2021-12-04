@@ -158,7 +158,7 @@ export default class Population {
 
       // Replace 'replaceCnt' Individuals with lowest fitness from parent with same amount of best offsprings
       for (let i = 0; i < replaceCnt; i++) {
-        this.parentPop[i] = this.childPop[i]
+        this.parentPop[this.parentPop.length - 1 - i] = this.childPop[i]
       }
     },
 
