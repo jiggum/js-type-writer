@@ -11,14 +11,15 @@ type AST = ts.SourceFile
 export interface Individual {
   ast: AST
   fitness: number
+  diagnostics?: ts.Diagnostic[]
 }
 
 dotenv.config()
 const POP_SIZE = parseInt(process.env.POP_SIZE!) // Must be an even number
 // assert(POP_SIZE % 2 == 0)
-const TRANSFORM_RATE = parseInt(process.env.MUTATION_TRANSFORM_RATE!)
-const UNION_RATE = parseInt(process.env.MUTATION_UNION_RATE!)
-const SHARPEN_RATE = parseInt(process.env.MUTATION_SHARPEN_RATE!)
+const TRANSFORM_RATE = Number(process.env.MUTATION_TRANSFORM_RATE!)
+const UNION_RATE = Number(process.env.MUTATION_UNION_RATE!)
+const SHARPEN_RATE = Number(process.env.MUTATION_SHARPEN_RATE!)
 const randomSeed = createSeeder()
 
 // comparator for sort function - order of increasing fitness
@@ -35,7 +36,12 @@ const compareFitnessInc = (s1: Individual, s2: Individual): number => {
  */
 const customFitness = (ast: ts.SourceFile): number => {
   // 🐛 TODO
-  return calcFitness(ast)
+  return calcFitness(ast) as number
+}
+
+const customDiagnostics = (ast: ts.SourceFile): ts.Diagnostic[] => {
+  // 🐛 TODO
+  return calcFitness(ast, true) as ts.Diagnostic[]
 }
 
 /**
@@ -53,6 +59,9 @@ export default class Population {
   public childPop: Array<Individual>
   private fitsum: number // sum of fitness for all Individuals in this population
 
+  public allTimeBest: Individual
+  public patience: number
+
   constructor(filepath: string) {
     this.parentPop = [] // Main population - invariant : always sorted, best indiv on the front
     this.matingPool = [] // Individuals chosen as parents are temporarily stored here
@@ -64,6 +73,9 @@ export default class Population {
       const ast = randomSeed(filepath)
       this.parentPop[i] = { ast, fitness: customFitness(ast) }
     }
+
+    this.allTimeBest = this.parentPop[0]
+    this.patience = 0
   }
 
   // Step 1. Calculate fitness of each Individual in the population
@@ -133,14 +145,17 @@ export default class Population {
       const child2: Individual = { ast: astB, fitness: 0 }
       crossover(child1.ast, child2.ast, count, (depth) => Math.max(10 / (depth * depth), 1))
 
-      // 3-2. Mutation
-      mutateTransform(child1.ast, TRANSFORM_RATE)
-      mutateUnion(child1.ast, UNION_RATE)
-      mutateSharpen(child1.ast, SHARPEN_RATE)
+      child1.diagnostics = customDiagnostics(child1.ast)
+      child2.diagnostics = customDiagnostics(child2.ast)
 
-      mutateTransform(child2.ast, TRANSFORM_RATE)
-      mutateUnion(child2.ast, UNION_RATE)
-      mutateSharpen(child2.ast, SHARPEN_RATE)
+      // 3-2. Mutation
+      mutateTransform(child1.ast, TRANSFORM_RATE, child1.diagnostics)
+      mutateUnion(child1.ast, UNION_RATE, child1.diagnostics)
+      mutateSharpen(child1.ast, SHARPEN_RATE, child1.diagnostics)
+
+      mutateTransform(child2.ast, TRANSFORM_RATE, child2.diagnostics)
+      mutateUnion(child2.ast, UNION_RATE, child2.diagnostics)
+      mutateSharpen(child2.ast, SHARPEN_RATE, child2.diagnostics)
 
       child1.fitness = customFitness(child1.ast)
       child2.fitness = customFitness(child2.ast)
@@ -176,6 +191,19 @@ export default class Population {
   findBest(): Individual {
     this.parentPop.sort(compareFitnessInc)
     return this.parentPop[0]
+  }
+
+  findAllTimeBest(): Individual {
+    const currentBest = this.parentPop.sort(compareFitnessInc)[0]
+
+    if (currentBest.fitness < this.allTimeBest.fitness) {
+      this.allTimeBest = currentBest
+      this.patience = 0
+    } else {
+      this.patience++
+    }
+
+    return this.allTimeBest
   }
 
   // Calculate average fitness of the whole population

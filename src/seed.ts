@@ -6,6 +6,7 @@ import {
   getInferredTypeNode,
   inCoverage,
   isAnyTypeNode,
+  isFunction,
   randomType,
   traverse,
 } from 'src/util'
@@ -56,7 +57,7 @@ export const createSeeder = () => {
         const [, convert, typeNode] = result
 
         if (typeNode == null || isAnyTypeNode(typeNode)) {
-          convert(randomType())
+          convert(randomType(false, true, isFunction(node)))
         }
       }
     })

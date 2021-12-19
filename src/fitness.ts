@@ -8,7 +8,7 @@ const compileOptions = {
 }
 const realHost = ts.createCompilerHost(compileOptions, true)
 
-export const calcFitness = (root: ts.SourceFile) => {
+export const calcFitness = (root: ts.SourceFile, asDiagnostics = false) => {
   const target = clone(root)
   const host: ts.CompilerHost = {
     fileExists: (filePath) => filePath === DUMMY_FILE_PATH || realHost.fileExists(filePath),
@@ -33,5 +33,9 @@ export const calcFitness = (root: ts.SourceFile) => {
     host,
   })
   const diagnostics = ts.getPreEmitDiagnostics(program)
-  return diagnostics.length
+  if (asDiagnostics) {
+    return diagnostics
+  } else {
+    return diagnostics.length
+  }
 }

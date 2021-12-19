@@ -6,6 +6,8 @@ import { resolve } from 'path'
 
 dotenv.config()
 const POP_SIZE = parseInt(process.env.POP_SIZE!)
+const MAX_GENERATION = process.env.MAX_GENERATION && parseInt(process.env.MAX_GENERATION)
+const PATIENCE = process.env.PATIENCE && parseInt(process.env.PATIENCE)
 const parentSelectionChoice = 0 // ⚡️ hyperparameter
 const generationSelectionChoice = 0 // ⚡️ hyperparameter
 
@@ -57,11 +59,11 @@ while (!stoppingCondition) {
   runCycle(population)
 
   // Show individual with best fitness
-  const bestIndiv: Individual = population.findBest()
+  const bestIndiv: Individual = population.findAllTimeBest()
   console.log(`--Generation ${generation} end / current best fitness ${bestIndiv.fitness}--`)
 
   // 🐛 Stopping condition - target song is found
-  if (bestIndiv.fitness < 10) {
+  if (bestIndiv.fitness < 1 || generation === MAX_GENERATION || population.patience === PATIENCE) {
     console.log(
       `Stopping condition reached - Generation ${generation} / Fitness ${bestIndiv.fitness}`,
     )
